@@ -8,53 +8,38 @@ int main() {
     int map[N][M];
     int dp[2][N][M];
     int dir[4] = {1,0,-1,0};
-    cout << " here";
-    queue<pair<int,int>> que;
+    queue<tuple<int,int, int>> que;
 
     memset(dp,0,sizeof dp);
-    for(int i = 0; i < N; ++i) {
-        for (int j = 0; j < M; ++j) {
-            cin >> map[i][j];
-            cout << map[i][j] << " ";
-        }
-    }
+ 	for (int i = 0; i < N; i++) {
+		string temp;
+		cin >> temp;
+		for (int j = 0; j < M; j++) {
+			map[i][j] = temp[j] - 48;
+		}
+	}
     dp[0][0][0] = 1;
-    que.push({0,0});
+    que.push({0,0,0});
     while(!que.empty()) {
-        cout << ":here\n";
-        auto [x, y] = que.front();
+        auto [x, y, wall] = que.front();
+        if(x == M - 1 && y == N -1) {
+            cout << dp[wall][y][x];
+            return 0;
+        }
         for(int i = 0; i < 4; ++i) {
             int next_x = x + dir[i];
-            int next_y = y + dir[(i + 1) % 2];
-            if(next_x < 0 || next_y < 0 || next_x >= M || next_y >= N)
-                continue;
-            if(map[next_y][next_x] == 0 && dp[0][next_y][next_x] == 0) {
-                if(dp[0][y][x] != 0)
-                    dp[0][next_y][next_x] = dp[0][y][x] + 1;
-                if(dp[1][y][x] != 0)
-                    dp[1][next_y][next_x] = dp[0][y][x] + 1;
-                dp[1][next_y][next_x] = dp[1][y][x] + 1;
-                que.push({next_x, next_y});
-            } else if (map[next_y][next_x] == 1 && dp[1][next_y][next_x] == 0) {
+            int next_y = y + dir[(i + 1) % 4];
+            if(next_x < 0 || next_y < 0 || next_x >= M || next_y >= N) continue;
+            if (map[next_y][next_x] == 1 && wall == 0 && dp[1][next_y][next_x] == 0) {
                 dp[1][next_y][next_x] = dp[0][y][x] + 1;
-                que.push({next_x, next_y});
-            } else if (map[next_y][next_x] == 0 && dp[0][next_y][next_x] > dp[0][y][x] + 1) {
-                dp[0][next_y][next_x] = dp[0][y][x] + 1;
-                que.push({next_x, next_y});
-            } else if (map[next_y][next_x] == 0 && dp[1][next_y][next_x] > dp[1][y][x] + 1) {
-                dp[1][next_y][next_x] = dp[1][y][x] + 1;
-                que.push({next_x, next_y});
+                que.push(make_tuple(next_x, next_y, 1));
+            } else if (map[next_y][next_x] == 0 && dp[wall][next_y][next_x] == 0){
+                dp[wall][next_y][next_x] = dp[wall][y][x] + 1;
+                que.push(make_tuple(next_x, next_y, wall));
             }
         }
         que.pop();
     }
-    if (dp[0][N -1][M - 1] || dp[1][N -1][M - 1]) {
-        ans = max(dp[0][N -1][M - 1], dp[1][N -1][M - 1]);
-        if (ans == 0)
-            ans = -1;
-    } else
-        ans = min(dp[0][N -1][M - 1], dp[1][N -1][M - 1]);
-    cout << ans;
-
+    cout << -1;
     return 0;
 }

@@ -1,4 +1,2 @@
 # algo
 # baekjoon
-# baekjoon
-# baekjoon

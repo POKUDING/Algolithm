@@ -19,6 +19,19 @@ bool check_distance() {
     return pq.empty();
 }
 
+void ting_santa(int x, int y, int dirx, int diry){
+    int num = grid[y][x];
+    grid[y][x] = 0;
+    if (x + dirx > N || x + dirx <= 0 || y + diry > N || y + diry <=0) {
+        santas[num][2] = -1;
+        return ;
+    } else if (grid[y + diry][x + dirx] != 0)
+        ting_santa(x + dirx, y + diry, dirx, diry);
+    grid[y + diry][x + dirx] = num;
+    santas[num][0] = y + diry;
+    santas[num][1] = x + dirx;
+}
+
 void crush(int diry, int dirx, int score, int num) {
     santas[num][3] += score;
     int y = Y;
@@ -26,16 +39,14 @@ void crush(int diry, int dirx, int score, int num) {
     grid[y][x] = 0;
     y += diry * score;
     x += dirx * score;
-    while(y > 0 && x > 0 && y <= N && x <= N && grid[y][x] != 0) {
-        ++y;
-        ++x;
-    }
-    if (!(y > 0 && x > 0 && y <= N && x <= N))
+    if(y > 0 && x > 0 && y <= N && x <= N && grid[y][x] != 0)
+        ting_santa(x, y, dirx, diry);
+    if (!(y > 0 && x > 0 && y <= N && x <= N)) {
         santas[num][2] = -1;
-    else {
-        grid[y][x] = 1;
-        santas[num][2] = turns + 1;
+        return ;
     }
+    grid[y][x] = num;
+    santas[num][2] = turns + 1;
     santas[num][0] = y;
     santas[num][1] = x;
 }
@@ -58,86 +69,57 @@ void move_rudolf() {
 }
 
 void move_santa() {
+    int dirX[4] = {0, 1, 0, -1};
+    int dirY[4] = {-1, 0, 1, 0};
     for(int i = 1; i <= P; ++i) {
-        if (santas[i][2] < 0 || santas[i][2] == turns) continue ;
+        if (santas[i][2] < 0 || santas[i][2] >= turns) continue ;
+        vector<pair<int,int>> moves;
         int santa_y = santas[i][0];
         int santa_x = santas[i][1];
-        if(Y < santa_y && grid[santa_y - 1][santa_x] == 0) {
-            grid[santa_y][santa_x] = 0;
-            grid[santa_y - 1][santa_x] = 1;
-            santas[i][0] = santa_y - 1;
-            if(Y == santa_y - 1 && X == santa_x)
-                crush(1, 0, D, i);
-        } else if (X > santa_x && grid[santa_y][santa_x + 1] == 0) {
-            grid[santa_y][santa_x] = 0;
-            grid[santa_y ][santa_x + 1] = 1;
-            santas[i][1] = santa_x + 1;
-            if(Y == santa_y && X == santa_x + 1)
-                crush(0, -1, D, i);
-        } else if (Y > santa_y && grid[santa_y + 1][santa_x] == 0) {
-            grid[santa_y][santa_x] = 0;
-            grid[santa_y + 1][santa_x] = 1;
-            santas[i][0] = santa_y + 1;
-            if(Y == santa_y + 1 && X == santa_x)
-                crush(-1, 0, D, i);
-        } else if (X < santa_x && grid[santa_y][santa_x - 1] == 0) {
-            grid[santa_y][santa_x] = 0;
-            grid[santa_y][santa_x - 1] = 1;
-            santas[i][1] = santa_x - 1;
-            if(Y == santa_y && X == santa_x - 1)
-                crush(0, 1, D, i);
+        int cur_distance = (int)pow(santa_y - Y, 2) + (int)pow(santa_x - X, 2);
+        for(int j = 0; j < 4; ++j) {
+            if(santa_y + dirY[j] <= 0 || santa_y + dirY[j] > N || santa_x + dirX[j] <= 0 || santa_x + dirX[j] > N) continue;
+            int move_distance = (int)pow(santa_y + dirY[j] - Y, 2) + (int)pow(santa_x + dirX[j] - X, 2);
+            if(move_distance < cur_distance)
+                moves.push_back({move_distance, j});
+        }
+        sort(moves.begin(),moves.end());
+        for(int j = 0; j < moves.size(); ++j) {
+            if(grid[santa_y + dirY[moves[j].second]][santa_x + dirX[moves[j].second]] == 0) {
+                grid[santa_y][santa_x] = 0;
+                grid[santa_y + dirY[moves[j].second]][santa_x + dirX[moves[j].second]] = i;
+                santas[i][0] = santa_y + dirY[moves[j].second];
+                santas[i][1] = santa_x + dirX[moves[j].second];
+                if(Y == santas[i][0] && X == santas[i][1])
+                    crush(-dirY[moves[j].second], -dirX[moves[j].second], D, i);
+                break;
+            }
         }
     }
 }
 
 void init() {
     cin >> N >> M >> P >> C >> D;
-    cout << N << " " << M << " " << P << " " << C << " " << D;
     cin >> Y >> X;
     for(int i = 0; i < P; ++i) {
         int num;
         cin >> num;
         cin >> santas[num][0] >> santas[num][1];
-        grid[santas[num][0]][santas[num][1]] = 1;
+        grid[santas[num][0]][santas[num][1]] = num;
     }
-}
-
-void print_santas() {
-    cout << "\n print santas ===============\n";
-    for(int i = 1; i <= P; ++i) {
-        cout << santas[i][0] << santas[i][1] << santas[i][2] << santas[i][3] << "\n";
-    }
-    cout << "===\n";
-}
-
-void print_rudolf() { 
-    cout << "roudolf Y: " << Y << " rodolf X: " << X <<"\n";
-}
-
-void print_grid() {
-    cout << "print grid ======\n";
-    for(int i = 1; i <= N; ++i) {
-        for (int j = 1; j <= N; ++j)
-            cout <<grid[i][j] << " ";
-        cout << "\n";
-    }
-    cout << "====\n";
 }
 
 int main() {
+    cin.tie(0); ios::sync_with_stdio(0);
     init();
     check_distance();
     while(++turns <= M) {
-        cout << turns << "===================\n";
-        print_grid();
-        print_santas();
-        print_rudolf();
         move_rudolf();
         move_santa();
         if(check_distance())
             break;
     }
     for (int i = 1; i <= P; ++i)
-        cout << santas[i][3] << " ";
+        cout << santas[i][3] - 1 << " ";
     return 0;
 }

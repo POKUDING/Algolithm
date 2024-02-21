@@ -55,10 +55,7 @@ int main()
 	vector<int>::iterator it;
 
 	cin >> n;
-	vector<vector<int> > sit(n + 2);
-	for (int i = 0; i < n + 2; i++) {
-		sit[i].resize(n + 2);
-    }
+	vector<vector<int> > sit(n + 2, vector<int>(n+2));
 	for(int i = 0, num,like; i < n * n; ++i) {
 		cin >> num;
 		input.push_back(num);

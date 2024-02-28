@@ -1,22 +1,27 @@
 #include <bits/stdc++.h>
 
-int N, K;
+using namespace std;
 
-int dfs(int i,int d, vector<vector<int>>& dp) {
-    if (d == K) {
-        return dp[1][i];
-    }
-    
-}
+int N, K;
+int dp[1001][1001];
+int mod = 1000000003;
 
 int main() {
     cin >> N >> K;
-    vector<vector<int>> dp(2,vector<int>(N));
-    dp[0] = 1;
-    dp[1] = 1;
-    if(N / 2 < K)
-        cout << 0;
-    else {
-        for(int i = 0; )
+    for(int i = 0; i <= N; ++i) {
+        dp[i][1] = i;
+        dp[i][0] = 1;
     }
+
+    for(int i = 2; i <=N; ++i) {
+        for(int j = 2; j <=K; ++j)
+            dp[i][j] = (dp[i - 1][j] + dp[i - 2][j - 1]) % mod;
+    }
+
+    // for(int i = 0; i <=N; ++i) {
+    //     for(int j = 0; j <=K; ++j)
+    //         cout <<dp[i][j] << " ";
+    //     cout << "\n";
+    // }
+    cout << (dp[N - 1][K] + dp[N - 3][K - 1]) % mod;
 }

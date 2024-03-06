@@ -20,15 +20,15 @@ int main() {
     sort(vec.begin(), vec.end());
     for(int i = 0; i < vec.size(); ++i) {
         if(checkFastMonth(m, d, vec[i][0],vec[i][1])) {
+            if(checkFastMonth(em_tmp ,ed_tmp, vec[i][0], vec[i][1])) {
+                cout << 0;
+                return 0;
+            }
             ++ans;
             m = em_tmp;
             d = ed_tmp;
         }
         if (checkFastMonth(em_tmp, ed_tmp,vec[i][2], vec[i][3])) {
-            if(checkFastMonth(m ,d, vec[i][0], vec[i][1])) {
-                cout << 0;
-                return 0;
-            }
             em_tmp = vec[i][2];
             ed_tmp = vec[i][3];
             if(checkFastMonth(11,30, em_tmp, ed_tmp)) {
